@@ -1,0 +1,62 @@
+version: '3'
+
+services:
+  postgres: 
+    image: postgres:latest
+    container_name: postgres
+    restart: always
+    tty: true
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=gerenciador-votacao-sessao-db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+    networks:
+      customnet:
+        ipv4_address: 171.1.0.15
+        
+  pgadmin:
+    container_name: pgadmin4_container
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - "5050:80"
+    networks:
+      customnet:
+        ipv4_address: 171.1.0.16
+
+  gerenciador-votacao-sessao:
+    build: 
+      context: gerenciador-votacao-sessao
+    image: gerenciador-votacao-sessao-app
+    container_name: gerenciador-votacao-sessao
+    networks:
+      customnet:
+        ipv4_address: 171.1.0.10
+    tty: true
+    restart: always
+    depends_on:
+      - postgres
+
+  nginx:
+    build:
+      context: nginx
+    image: nginx-server
+    container_name: nginx
+    ports:
+      - "8000:80"
+    networks:
+      customnet:
+        ipv4_address: 171.1.0.5
+    tty: true
+    restart: always
+
+networks:
+  customnet:
+    external: true
